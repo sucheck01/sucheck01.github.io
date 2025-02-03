@@ -9,34 +9,33 @@ const player = {
     velX: 0, velY: 0, onGround: false, climbing: false
 };
 
-const gravity = 0.5;
+const gravity = 0.6;
 const jumpPower = -12;
 const moveSpeed = 3;
-const friction = 0.9;
-const scrollSpeed = 2;
+const friction = 0.8;
+let scrollSpeed = 2; // Velocidade inicial da esteira
 let keys = {};
+let gameRunning = false;
 
 const platforms = [
-    { x: 300, y: canvas.height - 100, width: 100, height: 20 },
-    { x: 600, y: canvas.height - 150, width: 100, height: 20 },
-    { x: 900, y: canvas.height - 200, width: 100, height: 20 },
-    { x: 1200, y: canvas.height - 250, width: 50, height: 100 } // Parede para escalar
+    { x: 200, y: canvas.height - 80, width: 100, height: 20 },
+    { x: 500, y: canvas.height - 150, width: 100, height: 20 },
+    { x: 800, y: canvas.height - 200, width: 100, height: 20 },
+    { x: 1100, y: canvas.height - 250, width: 50, height: 100 } // Parede para escalar
 ];
 
 function update() {
+    if (!gameRunning) return;
+
     player.velY += gravity;
     player.velX *= friction;
 
     if (keys["ArrowLeft"]) player.velX = -moveSpeed;
     if (keys["ArrowRight"]) player.velX = moveSpeed;
-    
+
     if (keys["ArrowUp"] && player.onGround) {
         player.velY = jumpPower;
         player.onGround = false;
-    }
-
-    if (keys["ArrowUp"] && player.climbing) {
-        player.velY = -5; // Subir escalando
     }
 
     player.x += player.velX;
@@ -46,7 +45,6 @@ function update() {
     player.climbing = false;
 
     platforms.forEach(platform => {
-        // Detecção de colisão com o topo da plataforma (para pisar nela)
         if (player.y + player.height > platform.y &&
             player.y + player.height < platform.y + platform.height + player.velY &&
             player.x + player.width > platform.x &&
@@ -54,16 +52,6 @@ function update() {
                 player.y = platform.y - player.height;
                 player.velY = 0;
                 player.onGround = true;
-        }
-
-        // Verifica se está agarrado na parede
-        if (player.x + player.width > platform.x &&
-            player.x < platform.x + platform.width &&
-            player.y + player.height > platform.y &&
-            player.y < platform.y + platform.height) {
-                if (keys["ArrowUp"]) {
-                    player.climbing = true;
-                }
         }
 
         platform.x -= scrollSpeed;
@@ -92,6 +80,17 @@ function draw() {
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
     });
 }
+
+// Play/Pause
+document.getElementById("playPauseBtn").addEventListener("click", () => {
+    gameRunning = !gameRunning;
+    document.getElementById("playPauseBtn").innerText = gameRunning ? "Pause" : "Play";
+});
+
+// Aumentar velocidade
+document.getElementById("speedUpBtn").addEventListener("click", () => {
+    scrollSpeed += 1; // Aumenta a velocidade da esteira
+});
 
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
