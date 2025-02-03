@@ -10,7 +10,7 @@ const player = {
 };
 
 const gravity = 0.5;
-const jumpPower = -10;
+const jumpPower = -12;
 const moveSpeed = 3;
 const friction = 0.9;
 const scrollSpeed = 2;
@@ -29,11 +29,12 @@ function update() {
 
     if (keys["ArrowLeft"]) player.velX = -moveSpeed;
     if (keys["ArrowRight"]) player.velX = moveSpeed;
+    
     if (keys["ArrowUp"] && player.onGround) {
         player.velY = jumpPower;
         player.onGround = false;
     }
-    
+
     if (keys["ArrowUp"] && player.climbing) {
         player.velY = -5; // Subir escalando
     }
@@ -45,8 +46,9 @@ function update() {
     player.climbing = false;
 
     platforms.forEach(platform => {
+        // Detecção de colisão com o topo da plataforma (para pisar nela)
         if (player.y + player.height > platform.y &&
-            player.y + player.height < platform.y + platform.height &&
+            player.y + player.height < platform.y + platform.height + player.velY &&
             player.x + player.width > platform.x &&
             player.x < platform.x + platform.width) {
                 player.y = platform.y - player.height;
@@ -70,7 +72,11 @@ function update() {
         }
     });
 
-    if (player.y > canvas.height) player.y = canvas.height - player.height;
+    if (player.y > canvas.height) {
+        player.y = canvas.height - player.height;
+        player.velY = 0;
+        player.onGround = true;
+    }
 
     draw();
 }
